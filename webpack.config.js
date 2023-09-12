@@ -2,30 +2,13 @@ const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 /** @type {(env: any, arg: {mode: string}) => import('webpack').Configuration} **/
-module.exports = () => {
+module.exports = (env, argv) => {
+  const isProduction = argv.mode === 'production'
 
   /** @type {import('webpack').Configuration} **/
-  const config = {
-    output: {
-      path: path.join(__dirname, "/dist"),
-      filename: "bundle.js"
-    },
+  const config = {    
     entry: ['./src/main.jsx'],
-    plugins: [
-      new HtmlWebpackPlugin({
-        template: "public/index.html"
-      })
-    ],
-    devServer: {
-      hot: true,
-      port: 3000,
-      historyApiFallback: true,
-      static: {
-        directory: path.resolve(__dirname, 'public', 'index.html'),
-        serveIndex: true,
-        watch: true
-      }
-    },
+
     module: {
       rules: [
         {
@@ -42,6 +25,7 @@ module.exports = () => {
             {
               loader: 'css-loader',
               options: {
+                sourceMap: !isProduction,
                 modules: {
                   localIdentName: '[name]__[local]--[hash:base64:5]'
                 },
@@ -49,22 +33,81 @@ module.exports = () => {
               },
             },
             'postcss-loader',
-            'sass-loader'
+            {
+              loader: 'sass-loader',
+              options: { sourceMap: !isProduction }
+            },           
           ],
           include: /\.module\.(sa|sc|c)ss$/
         },
         {
           test: /\.(sa|sc|c)ss$/,
-          use: [ 'style-loader', 'css-loader', 'postcss-loader', 'sass-loader' ],
+          use: [ 
+            'style-loader',
+            {
+              loader: 'css-loader',
+              options: { sourceMap: !isProduction },
+            },       
+            'postcss-loader', 
+            {
+              loader: 'sass-loader',
+              options: { sourceMap: !isProduction }
+            },
+          ],
           exclude: /\.module\.(sa|sc|c)ss$/,
         },
         {
-          test: /\.(png|woff|woff2|eot|ttf|svg)$/,
-          loader: "url-loader",
-          options: { limit: false },
+          test: /\.(png|svg|jpg|gif)$/,
+          use: [
+            {
+              loader: 'url-loader',
+              options: {
+                limit: false,
+                name: isProduction ? 'static/media/[name].[contenthash:6].[ext]' : '[path][name].[ext]',
+              },
+            },
+          ],
         },
-      ]
-    }
+        {
+          test: /\.(eot|ttf|woff|woff2)$/,
+          use: [
+            {
+              loader: 'url-loader',
+              options: {
+                limit: false,
+                name: isProduction ? 'static/fonts/[name].[ext]' : '[path][name].[ext]',
+              },
+            },
+          ],
+        },
+      ],
+    },
+
+    devServer: {
+      hot: true,
+      port: 3000,
+      historyApiFallback: true,
+      static: {
+        directory: path.resolve(__dirname, 'public', 'index.html'),
+        serveIndex: true,
+        watch: true
+      }
+    },
+    devtool: isProduction ? false : 'source-map',
+
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: "static/js/main.[contenthash:6].js",
+      publicPath: '/'
+    },
+
+    plugins: [
+      new HtmlWebpackPlugin({
+        template: path.resolve(__dirname, 'public', 'index.html'),
+        filename: 'index.html',
+        favicon: path.resolve(__dirname, 'public', 'favicon.svg'),
+      })
+    ],
   }
 
   return config
