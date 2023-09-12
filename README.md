@@ -7,3 +7,4 @@ webpack webpack-cli webpack-dev-server
 babel-loader css-loader sass sass-loader style-loader url-loader
 
 html-webpack-plugin
+mini-css-extract-plugin

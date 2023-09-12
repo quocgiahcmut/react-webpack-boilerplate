@@ -1,5 +1,8 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
+const webpack = require('webpack')
 
 /** @type {(env: any, arg: {mode: string}) => import('webpack').Configuration} **/
 module.exports = (env, argv) => {
@@ -21,7 +24,7 @@ module.exports = (env, argv) => {
         {
           test: /\.(sa|sc|c)ss$/,
           use: [
-            'style-loader',
+            MiniCssExtractPlugin.loader,
             {
               loader: 'css-loader',
               options: {
@@ -42,8 +45,8 @@ module.exports = (env, argv) => {
         },
         {
           test: /\.(sa|sc|c)ss$/,
-          use: [ 
-            'style-loader',
+          use: [
+            MiniCssExtractPlugin.loader,
             {
               loader: 'css-loader',
               options: { sourceMap: !isProduction },
@@ -102,12 +105,30 @@ module.exports = (env, argv) => {
     },
 
     plugins: [
+      new MiniCssExtractPlugin({
+        filename: isProduction ? 'static/css/[name].[contenthash:6].css' : '[name].css'
+      }),
+
       new HtmlWebpackPlugin({
         template: path.resolve(__dirname, 'public', 'index.html'),
         filename: 'index.html',
         favicon: path.resolve(__dirname, 'public', 'favicon.svg'),
       })
     ],
+  }
+
+  if (isProduction) {
+    config.plugins = [
+      ...config.plugins,
+      new webpack.ProgressPlugin(),
+    ]
+
+    config.optimization = {
+      minimizer: [
+        `...`,
+        new CssMinimizerPlugin()
+      ],
+    }
   }
 
   return config
