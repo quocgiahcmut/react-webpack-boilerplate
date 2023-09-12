@@ -37,7 +37,26 @@ module.exports = () => {
         },
         {
           test: /\.(sa|sc|c)ss$/,
-          use: ["style-loader", "css-loader", "sass-loader"],
+          use: [
+            'style-loader',
+            {
+              loader: 'css-loader',
+              options: {
+                modules: {
+                  localIdentName: '[name]__[local]--[hash:base64:5]'
+                },
+                importLoaders: 2,
+              },
+            },
+            'postcss-loader',
+            'sass-loader'
+          ],
+          include: /\.module\.(sa|sc|c)ss$/
+        },
+        {
+          test: /\.(sa|sc|c)ss$/,
+          use: [ 'style-loader', 'css-loader', 'postcss-loader', 'sass-loader' ],
+          exclude: /\.module\.(sa|sc|c)ss$/,
         },
         {
           test: /\.(png|woff|woff2|eot|ttf|svg)$/,

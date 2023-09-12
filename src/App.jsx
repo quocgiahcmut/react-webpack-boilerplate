@@ -1,10 +1,11 @@
 import React from 'react'
-import './App.scss'
+import styles from './App.module.scss'
 
 function App() {
+  console.log(styles)
   return (
     <>
-      <h1>React + Webpack</h1>
+      <h1 className={styles.title}>React + Webpack</h1>
     </>
   )
 }
